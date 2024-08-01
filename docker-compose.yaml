@@ -1,0 +1,50 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres
+    restart: always
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_USER=me
+      - POSTGRES_PASSWORD=contrasena
+      - POSTGRES_DB=root
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "admin@admin.com"
+      PGADMIN_DEFAULT_PASSWORD: "contrasena"
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgres
+
+  web:
+    build:
+      context: .
+      dockerfile: ./deployment/images/backend.Dockerfile
+    container_name: plataforma-be
+    image: plataforma-be
+    command: >
+      sh -c "python plataforma/manage.py makemigrations --noinput &&
+             python plataforma/manage.py makemigrations participante --noinput &&
+             python plataforma/manage.py migrate --noinput &&
+             python plataforma/manage.py runserver 0.0.0.0:8000" 
+
+    environment:
+      - DJANGO_DEBUG=true
+      - DATABASE_URL=postgres://me:contrasena@postgres:5432/root
+    ports:
+      - "8000:8000"
+      - "8888:8888"
+    volumes:
+      - ./plataforma:/app/plataforma
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
