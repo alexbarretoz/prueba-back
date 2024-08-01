@@ -14,5 +14,9 @@ COPY plataforma/requirements.txt /app/
 RUN python3 -m pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Actualiza la lista de paquetes e instala icu-data-full
+RUN apt-get update && \
+    apt-get install -y icu-data-full
+    
 ARG VERSION
 ENV VERSION $VERSION
